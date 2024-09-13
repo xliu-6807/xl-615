@@ -1,0 +1,46 @@
+---
+title: "SURV615 HW2"
+author: "Xiaoqing Liu"
+date: "2024-09-11"
+output: html_document
+---
+
+```{r setup, include=FALSE, tidy=TRUE}
+knitr::opts_chunk$set(echo = TRUE,cache=TRUE, 
+                      autodep=TRUE, cache.comments=FALSE,
+                      message=FALSE, warning=FALSE)
+```
+
+1. Using the Auto dataset in the ISLR2 package fit a regression model of miles per gallon (mpg) as a function of acceleration and save as an object called “mod1”.
+```{r}
+library(ISLR2)
+mod1 <- lm(mpg~acceleration, data = Auto)
+summary(mod1)
+```
+
+2. How would you interpret the intercept and slope from #1?
+
+When acceleration is 0, the estimated value of mpg is 4.8332.But this is not realistic or practically significant. The slope indicated that for every one-unit increase in acceleration, the miles per gallon (mpg) increases by approximately 1.20.
+
+
+3. Does the intercept make sense? Show how you would refit the model to get an interpretable intercept and explain whether this is necessary. Interpret the intercept from the refit model.
+
+No, because an acceleration of 0 is unrealistic for a car. 
+```{r}
+Auto$acceleration_centered <- Auto$acceleration - mean(Auto$acceleration)
+mod1_centered <- lm(mpg ~ acceleration_centered, data = Auto)
+summary(mod1_centered)
+```
+
+4. What is the null hypothesis being tested via the t statistic for acceleration? Does this hypothesis change if the predictor is centered?
+
+Under the null hypothesis, changes in acceleration do not have a statistically significant effect on mpg.
+the hypothesis does not change if the predictor is centered. Because the null hypothesis and the t-test on the slope are unaffected by centering the predictor, only the interpretation of the intercept changes.
+
+
+5. What are some of the reasons you might choose a more flexible modeling approach? What are some of the tradeoffs of choosing a more flexible approach?
+
+Choosing a more flexible modeling approach can improve accuracy and better capture complex
+relationships,this can lead to improved predictive accuracy.However, the tradeoff is that flexible models often become less interpretable, making it difficult to understand the specific relationships between variables. 
+
+
