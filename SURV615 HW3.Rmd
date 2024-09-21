@@ -1,0 +1,128 @@
+---
+title: "SURV615 HW3"
+author: "Xiaoqing Liu"
+date: "2024-09-19"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+A. Examine crim with summary() and in a histogram.
+
+```{r}
+installed.packages('MASS')
+library(MASS)
+data('Boston')
+summary(Boston$crim)
+hist(Boston$crim, 
+     main = "Histogram of Per Capita Crime Rate", 
+     xlab = "Per Capita Crime Rate", 
+     col = "red", 
+     breaks = 30)
+```
+
+B. Focus on suburbs with the crime rate above 25. How many suburbs fall into this group?
+What are the pupil-teacher ratios like in those suburbs? How about property tax rates? How
+about median home values? How do the pupil-teacher ratios, property tax rates and median
+home values compare between these suburbs and the remaining suburbs?
+```{r}
+high_crime_suburbs <- Boston[Boston$crim > 25, ]
+low_crime_suburbs <- Boston[Boston$crim <= 25, ]
+
+num_high_crime_suburbs <- nrow(high_crime_suburbs)
+num_high_crime_suburbs
+
+summary_high_crime <- summary(high_crime_suburbs[, c("ptratio", "tax", "medv")])
+summary_low_crime <- summary(low_crime_suburbs[, c("ptratio", "tax", "medv")])
+
+summary_high_crime
+summary_low_crime
+
+```
+
+C. Create a scatter plot of the crime rates and the median home values for 1) all suburbs, 2) suburbs bounding Charles River, and 3) suburbs not bounding Charles River. What do you observe?
+```{r}
+# Scatter plot for all suburbs
+plot(Boston$crim, Boston$medv,
+     main = "Crime Rate vs. Median Home Value (All Suburbs)",
+     xlab = "Per Capita Crime Rate (crim)",
+     ylab = "Median Home Value (medv)",
+     col = "blue",
+     pch = 19)
+
+# Suburbs bounding the Charles River
+charles_river_suburbs <- Boston[Boston$chas == 1, ]
+# Suburbs not bounding the Charles River
+non_charles_river_suburbs <- Boston[Boston$chas == 0, ]
+
+# Scatter plot for suburbs bounding Charles River
+plot(charles_river_suburbs$crim, charles_river_suburbs$medv,
+     main = "Crime Rate vs. Median Home Value (Suburbs Bounding Charles River)",
+     xlab = "Per Capita Crime Rate (crim)",
+     ylab = "Median Home Value (medv)",
+     col = "green",
+     pch = 19)
+
+# Scatter plot for suburbs not bounding Charles River
+plot(non_charles_river_suburbs$crim, non_charles_river_suburbs$medv,
+     main = "Crime Rate vs. Median Home Value (Suburbs Not Bounding Charles River)",
+     xlab = "Per Capita Crime Rate (crim)",
+     ylab = "Median Home Value (medv)",
+     col = "red",
+     pch = 19)
+
+```
+#Observing those 3 plot, there is a clear negative relationship between crime rates and home values, higher crime rates tend to be associated with lower home values.
+
+D. Analyze the crime rates as a function of median home values in a simple linear regression with an intercept. Report what the regression coefficients mean in lay terms.
+```{r}
+model <- lm(crim ~ medv, data = Boston)
+summary(model)
+```
+
+E. Calculate the coefficients reported in D as well as their standard errors by hand.
+```{r}
+
+```
+
+F. Create a scatter plot of the crime rates and the median home values with a regression line. Is the regression line a good summary of the crime rates? Examine residuals to assess this.
+```{r}
+model <- lm(crim ~ medv, data = Boston)
+plot(Boston$medv, Boston$crim,
+     main = "Crime Rate vs. Median Home Value with Regression Line",
+     xlab = "Median Home Value (medv)",
+     ylab = "Per Capita Crime Rate (crim)",
+     pch = 19, col = "blue")
+abline(model, col = "red", lwd = 2)
+
+
+residuals <- residuals(model)
+plot(Boston$medv, residuals,
+     main = "Residuals of Crime Rate vs. Median Home Value",
+     xlab = "Median Home Value (medv)",
+     ylab = "Residuals",
+     pch = 19, col = "blue")
+abline(h = 0, col = "red", lwd = 2)
+```
+#The regression line does not seem to be a good summary of the crime rates in relation to the median home values, since the residuals show a pattern that suggests a non-linear relationship and the presence of outliers.
+
+
+G. Create a scatter plot of predicted crim (x-axis) and residuals (y-axis). What do you
+observe?
+```{r}
+model <- lm(crim ~ medv, data = Boston)
+
+predicted_crim <- fitted(model)
+residuals_crim <- residuals(model)
+
+plot(predicted_crim, residuals_crim,
+     main = "Predicted Crime Rates vs Residuals",
+     xlab = "Predicted Crime Rates",
+     ylab = "Residuals",
+     pch = 19, col = "blue")
+
+abline(h = 0, col = "red", lwd = 2)
+```
+#The residuals plot shows clear signs of heteroscedasticity and outliers, which means the current linear regression model is not the best representation of the data. 
