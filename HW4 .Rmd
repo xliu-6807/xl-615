@@ -1,0 +1,115 @@
+---
+title: "SURV615 HW4"
+author: "Xiaoqing Liu"
+date: "2024-09-27"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+This exercise involves the Boston housing data set in ISLR2. Assume that we
+are interested in median home values, medv.
+1. Examine medv as a function of crim, zn and indus in a multiple linear regres-
+sion.
+```{r }
+install.packages('ISLR2')
+library(ISLR2)
+data("Boston")
+model <- lm(medv ~ crim + zn + indus, data = Boston)
+summary(model)
+```
+A. Identify the predictors which are “statistically significant” at α= 0.05.
+# At α= 0.05, all 3 of the predictors are statistically significant. Because the p-values of them are all less than 0.05.
+
+B. List the null and alternative hypotheses tested in 1A and your conclusions.
+```{r}
+model <- lm(medv ~ crim + zn + indus, data = Boston)
+summary_model <- summary(model)
+p_values <- summary_model$coefficients[, "Pr(>|t|)"]
+p_values
+
+
+alpha <- 0.05
+decision <- ifelse(p_values < alpha, "Reject H0", "Fail to Reject H0")
+
+
+results <- data.frame(
+  Predictor = rownames(summary_model$coefficients),
+  p_value = p_values,
+  Decision = decision
+)
+
+results
+```
+C. Interpret each of the regression coefficients as if it were the primary exposure
+of interest. Do they make sense?
+
+
+D. It’s generally not good practice to interpret all predictors as if they were the
+exposure of interest. Why do you think doing so could be problematic?
+
+
+E. Construct and interpret 95% confidence intervals forˆβcrim, βzn, andˆβindus (you do not need to calculate them “by hand”). How does the confidence intervals correspond to the hypotheses tested in 1A and 1B?
+
+```{r}
+model <- lm(medv ~ crim + zn + indus, data = Boston)
+conf_intervals <- confint(model, level = 0.95)
+conf_intervals_crim_zn_indus <- conf_intervals[c("crim", "zn", "indus"), ]
+conf_intervals_crim_zn_indus
+```
+# In the hypothesis testing from 1A and 1B, the hypothesis H0 is rejected because the p-values were all less than α=0.05. From the result of E, the confident intervals of crim and indus does not include 0. It means that those preditors are not statistically significant. And zn is still statistically significant.
+
+F. Calculate R2 and R2
+adj “by hand” (you can use helper functions from R to get
+the components needed for the formula, but do not simply extract it from the
+model object). What do they mean?
+```{r}
+model <- lm(medv ~ crim + zn + indus, data = Boston)
+y_actual <- Boston$medv
+y_predicted <- predict(model)
+y_mean <- mean(y_actual)
+
+TSS <- sum((y_actual - y_mean)^2)
+RSS <- sum((y_actual - y_predicted)^2)
+
+R2 <- 1 - (RSS / TSS)
+
+n <- length(y_actual)
+p <- length(coefficients(model)) - 1  # number of predictors
+
+R2_adj <- 1 - ((1 - R2) * (n - 1) / (n - p - 1))
+
+paste("R^2:", round(R2, 4))
+paste("Adjusted R^2:", round(R2_adj, 4))
+```
+
+2. Fit a simple linear regression model with medv as a function of zn and compare
+it to the model from question 1 using the global F test and one other method.
+Which model do you prefer based on the results of the comparison?
+```{r}
+model_simple <- lm(medv ~ zn, data = Boston)
+model_multiple <- lm(medv ~ crim + zn + indus, data = Boston)
+
+anova_comparison <- anova(model_simple, model_multiple)
+
+adj_r2_simple <- summary(model_simple)$adj.r.squared
+adj_r2_multiple <- summary(model_multiple)$adj.r.squared
+
+aic_simple <- AIC(model_simple)
+aic_multiple <- AIC(model_multiple)
+bic_simple <- BIC(model_simple)
+bic_multiple <- BIC(model_multiple)
+
+print("Global F-test:")
+print(anova_comparison)
+
+print("Adjusted R^2 comparison:")
+print(paste("Simple model Adjusted R^2:", round(adj_r2_simple, 4)))
+print(paste("Multiple model Adjusted R^2:", round(adj_r2_multiple, 4)))
+
+print("AIC and BIC comparison:")
+print(paste("Simple model AIC:", round(aic_simple, 4), "BIC:", round(bic_simple, 4)))
+print(paste("Multiple model AIC:", round(aic_multiple, 4), "BIC:", round(bic_multiple, 4)))
+```
+# The multiple regression model is preferred. Because it explains significantly more variance in medv than the simple model.
