@@ -1,0 +1,67 @@
+---
+title: "SURV615 HW5"
+author: "Xiaoqing Liu"
+date: "2024-10-17"
+output: pdf_document
+---
+
+This exercise involves the Boston housing dataset in ISLR2. Assume that we are interested in median home values, medv.
+1. Examine medv as a function of chas in a simple linear regression model with an intercept. Notice the nature of chas for its use in this and following models. What hypothesis are you testing with each coefficient in lay terms? Given the results of the hypothesis testing, what do the coefficients mean?
+
+# Null hypothesis: H0: β = 0
+# Alternative Hypothesis: H1:β != 0
+# From the output model, we can see that p-value for the coefficient chas is 7.39e-05,this p-value is smaller than the critical value of 0.05, so we reject the null hypothesis, suggesting that living near the Charles River has a statistically significant positive effect on home prices.
+# The intercept means that the expected median home values is approximately 22.0938 while chas equal to 0.
+# The coefficient (chas) means that the expected median home values of homes that near the nature of chas is approximately 6.3462 higher than those are not near.
+```{r}
+library(ISLR2)
+data('Boston')
+model <- lm(medv ~ chas, Boston)
+summary(model)
+```
+2. Examine medv as a function of chas and indus in a multiple linear regression. What do the coefficients mean?
+
+# The intercept means that the expected median home value is approximately 29.4317 while chas and indus are equal to 0.
+# Coefficient chas means that the expected median home values of homes that near the nature of chas is approximately 6.3462 higher than those are not near. While holding indus contant.
+# Coefficient indus means that the expected median home values of homes are approximately decreases by 0.66592 while indus increases by one measurement of unit, holding chas contant.
+```{r}
+model <- lm(medv ~ chas + indus, Boston)
+summary(model)
+```
+3. Given the results from #1 and #2, what do you conclude about chas and indus in relation to medv? Support your conclusion with a visualization.
+# Based on the graph, we can see that proximity to the Charles River (chas) has a positive effect on home values, but the presence of industrial land (indus) negatively impacts these values. Even though living near the Charles River increases home prices, industrialization tends to lower them.
+```{r}
+library(ggplot2)
+ggplot(Boston, aes(x = indus, y = medv, color = as.factor(chas))) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    title = "Median Home Value vs. Industrialization",
+    x = "Proportion of Non-Retail Business Acres",
+    y = "Median Home Value",
+    color = "Borders Charles River"
+  ) +
+  theme_minimal()
+
+```
+
+4. You think that the proportion of non-retail business acres may have a different impact on the expected average median home values in towns bordering the Charles River vs. those that don’t. Fit a linear regression model with an interaction term to assess this. What do you observe? Support your observations with a visualization.
+# We can see that The regression line for homes near the river (chas = 1) is flatter, showing a weaker negative relationship between indus and medv. The regression line for homes not near the river (chas = 0) is steeper, indicating that industrialization has a more pronounced negative effect on home values in these areas.
+
+# This suggests that being near the Charles River provides some protection against the detrimental effects of industrialization on home prices.
+```{r}
+model_interaction <- lm(medv ~ chas * indus, data = Boston)
+summary(model_interaction)
+
+ggplot(Boston, aes(x = indus, y = medv, color = as.factor(chas))) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE) +
+  labs(
+    title = "Interaction Between Industrialization and Proximity to Charles River",
+    x = "Proportion of Non-Retail Business Acres",
+    y = "Median Home Value",
+    color = "Borders Charles River"
+  ) +
+  theme_minimal()
+```
+
